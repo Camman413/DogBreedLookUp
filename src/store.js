@@ -8,43 +8,46 @@ const api = new API();
 
 vue.use(vuex)
 
-export default new vuex.Store ({
+export default new vuex.Store({
     state: {
         breeds: [],
         currentBreed: {},
     },
     actions: {
-        retrieveDogsFromAPI ({commit}) {
+        retrieveDogsFromAPI({
+            commit
+        }) {
             api.getAllDogs()
                 .then((response) => {
                     commit('setBreeds', Object.entries(response.data.message).map(breed => new Dog(breed)));
                 })
                 .catch(error => {
                     console.log(error)
-                }
-                )
+                })
         },
-        getCurrentBreed ({commit}, breed){
+        getCurrentBreed({
+            commit
+        }, breed) {
             commit('setCurrentBreed', breed)
             //console.log(breed)
-            
+
         }
     },
     getters: {
         breeds(state) {
             return state.breeds;
         },
-        currentBreed(state){
+        currentBreed(state) {
             return state.currentBreed
         }
     },
     mutations: {
-        setBreeds (state, breeds){
+        setBreeds(state, breeds) {
             state.breeds = breeds
         },
         setCurrentBreed(state, currentBreed) {
-        state.currentBreed = currentBreed
-        //console.log(state.currentBreed)
+            state.currentBreed = currentBreed
+            //console.log(state.currentBreed)
         }
     }
 })

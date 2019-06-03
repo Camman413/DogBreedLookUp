@@ -1,18 +1,17 @@
 <template>
-<div id="app">
-  <router-view/>
-</div>
+  <div id="app">
+    <router-view/>
+  </div>
 </template>
 
 <script>
-
 export default {
-  name: 'app',
-}
+  name: "app"
+};
 </script>
-
+<style lang="scss" src='./Styles/Dark.scss'></style>
 <style>
-#logo{
+#logo {
   height: 150px;
 }
 </style>

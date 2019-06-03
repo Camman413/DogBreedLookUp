@@ -2,62 +2,61 @@
 
 <template>
   <div class="Search">
-    <div id='headerBox'>
+    <div id="headerBox">
       <img id="logo" alt="Dog logo" src="../assets/logo.png">
-      <h1>{{ title }}</h1>
+      <h1 class="onSurface high">{{ title }}</h1>
       <input id="searchBox" type="text" v-model="searchQuery" placeholder="Search...">
     </div>
     <ul>
       <li v-for="(breed, i) in paginatedBreeds" :key="i">
-        <div>
-        <img v-bind:src="breed.image">
-        <span id="resultTitle">{{ capitalizeWord(breed.name) }}</span>
-        <router-link id="moreInfo" to='/dog' v-on:click.native="getCurrentBreed(breed)">View more about {{ capitalizeWord(breed.name) }}s</router-link>
-        <br>
-        <br>
-        <div v-if="breed.subBreeds.length > 0">
-          <span>Subbreeds: </span>
-          <br>
-          <div id="subbreedContainer">
-            
-          <span id="subbreeds" v-for="(subbreed, i) in breed.subBreeds" :key="i">
-            {{capitalizeWord(subbreed)}}&nbsp;
-          </span>
-          </div>
-        </div>
-        
-        </div>
+        <card
+          class="surfaceHover"
+          v-bind:title="capitalizeWord(breed.name)"
+          subtitle="Subbreeds:"
+          v-bind:content="arrayToString(breed.subBreeds)"
+          v-bind:icon="breed.image"
+          iconWidth="150px"
+          linkDest="/dog"
+          v-bind:linkText="`View more about ${breed.name}s`"
+          v-bind:linkClickFunc="getCurrentBreed"
+          v-bind:linkFuncParam="breed"
+          width="100%"
+        />
       </li>
     </ul>
     <h5 id="pagingButtons" v-if="this.getPageCount > 1">
-      <span v-on:click='prevPage()'>Previous Page</span>
+      <span class="button primary" v-on:click="prevPage()">Previous Page</span>
       &nbsp;
-      <span v-on:click='nextPage()'>Next Page</span>
+      <span class="button primary" v-on:click="nextPage()">Next Page</span>
     </h5>
   </div>
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex'
-import { constants } from 'crypto';
-import _ from 'lodash';
+import { mapGetters, mapActions } from "vuex";
+import _ from "lodash";
+import card from "../components/InfoCard.vue";
 
 export default {
+  components: {
+    card: card
+  },
   data() {
     return {
-      searchQuery: '',
+      searchQuery: "",
       filteredBreeds: [],
       paginatedBreeds: [],
       currentPage: 0,
-      title: "Dog Breed Search "
-    }
+      title: "Dog Breed Search ",
+      logo: "require(../)"
+    };
   },
-  name: 'Search',
+  name: "Search",
   watch: {
-    searchQuery: function (newQuery, oldQuery) {
-      this.resetCurrentPage()
-      this.filteredList()
-      this.pagenatedList()
+    searchQuery: function() {
+      this.resetCurrentPage();
+      this.filteredList();
+      this.pagenatedList();
     }
   },
   created() {
@@ -65,57 +64,76 @@ export default {
   },
   computed: {
     ...mapGetters({
-      breeds: 'breeds'
+      breeds: "breeds"
     }),
-    getPageCount : function(){
-      console.log(Math.ceil(this.filteredBreeds.length / 5))
-      return Math.ceil(this.filteredBreeds.length / 5)
-    },
+    getPageCount: function() {
+      return Math.ceil(this.filteredBreeds.length / 5);
+    }
   },
   methods: {
     ...mapActions({
-      retrieveDogsFromAPI: 'retrieveDogsFromAPI',
-      getCurrentBreed: 'getCurrentBreed'
+      retrieveDogsFromAPI: "retrieveDogsFromAPI",
+      getCurrentBreed: "getCurrentBreed"
     }),
     capitalizeWord(word) {
       return _.capitalize(word);
     },
-    filteredList : function () {
-      this.filteredBreeds = []
-      for(var i = 0; i < this.breeds.length; i++){
+    filteredList: function() {
+      this.filteredBreeds = [];
+      for (var i = 0; i < this.breeds.length; i++) {
         if (this.breeds[i].name.includes(this.searchQuery)) {
-          this.filteredBreeds.push(this.breeds[i])
+          this.filteredBreeds.push(this.breeds[i]);
         }
       }
     },
-    nextPage : function() {
-        if (this.currentPage < this.getPageCount){
-          this.currentPage++
-        }
-        this.pagenatedList()
-    },
-    prevPage : function() {
-      if (this.currentPage > 0){
-        this.currentPage--
+    nextPage: function() {
+      if (this.currentPage < this.getPageCount) {
+        this.currentPage++;
       }
-      this.pagenatedList()
+      this.pagenatedList();
     },
-    pagenatedList : function() {
-      this.paginatedBreeds = []
-      for(var i = 0; i< 5 && this.filteredBreeds[i]; i++){
-        this.paginatedBreeds.push(this.filteredBreeds[(this.currentPage * 5) + i])
+    prevPage: function() {
+      if (this.currentPage > 0) {
+        this.currentPage--;
+      }
+      this.pagenatedList();
+    },
+    pagenatedList: function() {
+      this.paginatedBreeds = [];
+      for (var i = 0; i < 5 && this.filteredBreeds[i]; i++) {
+        this.paginatedBreeds.push(
+          this.filteredBreeds[this.currentPage * 5 + i]
+        );
       }
     },
-    resetCurrentPage : function(){
+    resetCurrentPage: function() {
       this.currentPage = 0;
+    },
+    arrayToString: function(array) {
+      let string = "";
+      if (array.length > 1) {
+        if (array.length > 2) {
+          for (let i = 0; i < array.length - 1; i++) {
+            string = string + this.capitalizeWord(array[i]) + ", ";
+          }
+        } else {
+          string = string + this.capitalizeWord(array[0]) + " ";
+        }
+        string = string + "and " + this.capitalizeWord(array[array.length - 1]);
+      } else if (array.length === 1) {
+        string = string + this.capitalizeWord(array[0]);
+      }
+      return string;
     }
   }
-}
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
+
+
 <style lang="scss" scoped>
-#Search{
+#Search {
   text-align: center;
 }
 #pagingButtons {
@@ -125,20 +143,9 @@ export default {
   text-align: center;
   position: relative;
   left: 44%;
-  span{
-    color: rgb(255, 255, 255);
-    background-color: rgb(150, 150, 150);
+  span {
     padding: 5px;
-    border: 2px solid rgb(131, 131, 131);
-    border-radius: 4px;
   }
-  span:hover {
-    cursor: pointer;
-    background-color: rgb(175, 175, 175);
-  }
-}
-h1 {
-  color: rgb(63, 63, 63);
 }
 #searchBox {
   width: 26%;
@@ -164,40 +171,20 @@ ul {
   margin-right: auto;
   width: 50%;
 }
-li:hover {
-  box-shadow: 6px 6px 12px 0 #000000;
-  
-  right: 5px;
-  bottom: 5px;
-}
 li {
-  border: 2px solid rgb(131, 131, 131);
-  background-color: rgb(150, 150, 150);
-  min-height: 100px;
-  height: auto;
-  padding: 10px;
-  overflow: auto;
-  position: relative;
   div {
-    font-family: Verdana, Geneva, Tahoma, sans-serif;
     font-weight: bold;
-    color: rgb(255, 255, 255);
     width: 100%;
     height: 100%;
     position: relative;
     #moreInfo {
-      color: #cfcfcf;
       font-size: 10pt;
       float: left;
       position: absolute;
       bottom: 0;
       left: 175px;
     }
-    #moreInfo:hover {
-      color: #fcfcfc;
-      
-    }
-    div{
+    div {
       width: 60%;
       height: auto;
       float: right;
@@ -205,18 +192,18 @@ li {
       right: 0px;
     }
     img {
-    width: 150px;
-    position: relative;
-    float: left;
-    clear: both;
-    left: 0;
+      width: 150px;
+      position: relative;
+      float: left;
+      clear: both;
+      left: 0;
     }
     #resultTitle {
       position: absolute;
-      text-align:start;
+      text-align: start;
       top: 0;
       left: 175px;
-      
+
       font-size: 18pt;
     }
     #subbreeds {
@@ -231,7 +218,5 @@ li {
       right: 100px;
     }
   }
-  
 }
-
 </style>
